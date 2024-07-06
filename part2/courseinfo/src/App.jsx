@@ -15,7 +15,6 @@ const Part = ({ part }) =>
   </p>
 
 const Content = ({ parts }) => {
-
   return (
       parts.map((part) => {
         console.log("Part:", part);
