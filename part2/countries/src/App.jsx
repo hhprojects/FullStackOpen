@@ -1,34 +1,45 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import {useEffect, useState} from 'react'
+import Search from './components/Search'
+import CountryList from './components/CountryList'
+import countryService from './services/countries'
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const [countryList, setCountryList] = useState([])
+  const [filteredCountryList, setFilteredCountryList] = useState([])
+  const [country, setCountry] = useState('')
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+  useEffect(() => {
+    console.log('effect run, country is now', country)
+
+    console.log('fetching countries...')
+    countryService.getAll()
+    .then(response => {
+      console.log('response data:', response.data)
+      setCountryList(response.data)
+    })
+    
+  },[])
+
+  const handleCountryChange = (event) => {
+    const countrySearch = event.target.value
+    setCountry(countrySearch)
+
+    if (countrySearch){
+      const searchCountry = event.target.value
+      const filteredCountries = countryList.filter(country => country.name.common.toLowerCase().match(searchCountry.toLowerCase()))
+      console.log('Found Country List: ', filteredCountries)
+      
+      setFilteredCountryList(filteredCountries)
+    }else{
+      setFilteredCountryList([])
+    }
+  }
+
+  return(
+    <div>
+      <Search country={country} handleCountryChange={handleCountryChange}/>
+      <CountryList countryList={filteredCountryList} setCountryList={setFilteredCountryList}></CountryList>
+    </div>
   )
 }
 
