@@ -1,7 +1,9 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 var morgan = require('morgan')
 const cors = require('cors')
+const Phonebook = require('./models/phonebook')
 
 app.use(express.json())
 
@@ -13,41 +15,51 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :b
 
 app.use(cors())
 
-let contacts = [
-    { 
-      "id": "1",
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": "2",
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": "3",
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": "4",
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-]
+// let contacts = [
+//     { 
+//       "id": "1",
+//       "name": "Arto Hellas", 
+//       "number": "040-123456"
+//     },
+//     { 
+//       "id": "2",
+//       "name": "Ada Lovelace", 
+//       "number": "39-44-5323523"
+//     },
+//     { 
+//       "id": "3",
+//       "name": "Dan Abramov", 
+//       "number": "12-43-234345"
+//     },
+//     { 
+//       "id": "4",
+//       "name": "Mary Poppendieck", 
+//       "number": "39-23-6423122"
+//     }
+// ]
 
 app.get('/api/persons', (request, response) => {
-  response.json(contacts)
+  Phonebook.find({}).then(result =>{
+    response.json(result)
+  })
 })
 
 app.get('/api/persons/:id', (request, response) => {
-  const id = request.params.id
-  const contact = contacts.find(contact => contact.id === id)
-  if (contact){
-    response.json(contact)
-  }else{
-    response.status(404).end()
-  }
+  // const id = request.params.id
+  // const contact = contacts.find(contact => contact.id === id)
+  // if (contact){
+  //   response.json(contact)
+  // }else{
+  //   response.status(404).end()
+  // }
+
+  Phonebook.findById(request.params.id).then(result => {
+    if(result){
+      response.json(result)
+    }else{
+      response.status(404).end()
+    }
+  })
 })
 
 app.get('/api/info', (request, response) =>{
@@ -82,27 +94,28 @@ const checkUniqueName = (name) => {
 app.post('/api/persons', (request, response) => {
   const body = request.body
 
-  if (!body.name || !body.number){
+  if (body.name === undefined || body.number === undefined){
     return response.status(400).json({
       error: 'name or number missing'
     })
   }
 
-  if (checkUniqueName(body.name)){
-    return response.status(400).json({
-      error: 'name currently in use'
-    })
-  }
+  // if (checkUniqueName(body.name)){
+  //   return response.status(400).json({
+  //     error: 'name currently in use'
+  //   })
+  // }
 
-  const contact = {
-    id: getRandomInt(),
+  const contact = new Phonebook({
     name: body.name,
     number: body.number
-  }
-  
-  contacts = contacts.concat(contact)
+  })
 
-  response.json(contact)
+  contact.save().then(savedContact =>{
+    response.json(savedContact)
+  })
+  
+  
 })
 
 const PORT = process.env.PORT || 3001
