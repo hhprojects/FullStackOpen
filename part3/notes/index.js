@@ -1,22 +1,8 @@
-require('dotenv').config();
 const express = require('express')
 const app = express()
-const mongoose = require('mongoose')
+const Note = require('./models/note')
 
 app.use(express.json())
-
-const url = process.env.MONGODB_URI;
-
-mongoose.set('strictQuery',false)
-mongoose.connect(url)
-
-const noteSchema = new mongoose.Schema({
-  content: String,
-  important: Boolean,
-})
-
-const Note = mongoose.model('Note', noteSchema)
-
 
 // let notes = [
 //   {
